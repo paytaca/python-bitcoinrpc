@@ -1,4 +1,4 @@
-_json = __import__('json')
+_json = __import__('orjson')
 loads = _json.loads
 dumps = _json.dumps
 if hasattr(_json, 'JSONEncodeException'):

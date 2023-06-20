@@ -40,7 +40,7 @@ except ImportError:
     import httplib
 import base64
 import decimal
-import json
+import orjson
 import logging
 try:
     import urllib.parse as urlparse
@@ -125,8 +125,8 @@ class AuthServiceProxy(object):
         AuthServiceProxy.__id_count += 1
 
         log.debug("-%s-> %s %s"%(AuthServiceProxy.__id_count, self.__service_name,
-                                 json.dumps(args, default=EncodeDecimal)))
-        postdata = json.dumps({'version': '1.1',
+                                 orjson.dumps(args, default=EncodeDecimal)))
+        postdata = orjson.dumps({'version': '1.1',
                                'method': self.__service_name,
                                'params': args,
                                'id': AuthServiceProxy.__id_count}, default=EncodeDecimal)
@@ -157,7 +157,7 @@ class AuthServiceProxy(object):
             m = rpc_call.pop(0)
             batch_data.append({"jsonrpc":"2.0", "method":m, "params":rpc_call, "id":AuthServiceProxy.__id_count})
 
-        postdata = json.dumps(batch_data, default=EncodeDecimal)
+        postdata = orjson.dumps(batch_data, default=EncodeDecimal)
         log.debug("--> "+postdata)
         self.__conn.request('POST', self.__url.path, postdata,
                             {'Host': self.__url.hostname,
@@ -193,9 +193,9 @@ class AuthServiceProxy(object):
                 'code': -342, 'message': 'non-JSON HTTP response with \'%i %s\' from server' % (http_response.status, http_response.reason)})
 
         responsedata = http_response.read().decode('utf8')
-        response = json.loads(responsedata, parse_float=decimal.Decimal)
+        response = orjson.loads(responsedata, parse_float=decimal.Decimal)
         if "error" in response and response["error"] is None:
-            log.debug("<-%s- %s"%(response["id"], json.dumps(response["result"], default=EncodeDecimal)))
+            log.debug("<-%s- %s"%(response["id"], orjson.dumps(response["result"], default=EncodeDecimal)))
         else:
             log.debug("<-- "+responsedata)
         return response
